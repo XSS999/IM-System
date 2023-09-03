@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 )
 
 /**
@@ -93,6 +94,9 @@ func (this *Server) Handler(conn net.Conn) {
 	// 用户上线
 	user.Online()
 
+	//监听用户是否活跃的channel
+	isLive := make(chan bool)
+
 	// 每开一个客户端之后，就会开一个goroutine去监听当前客户端有没有发送消息
 	go func() {
 		buf := make([]byte, 4096)
@@ -114,11 +118,32 @@ func (this *Server) Handler(conn net.Conn) {
 
 			//进行广播
 			user.DoMessage(msg)
+
+			isLive <- true
 		}
 	}()
 
 	//当前handler阻塞
 	//select {}
+	for {
+		select {
+		//每次活跃就重置时间
+		case <-isLive:
+			//不做任何事情，只为了激活select
+
+		case <-time.After(time.Second * 10):
+			//超时下线
+			user.SendMsg("您已超时")
+			//销毁资源
+			close(user.C)
+			close(isLive)
+			//关闭连接
+			conn.Close()
+
+			//关闭goroutine
+			return // 也可用runtime.Goexit()
+		}
+	}
 }
 
 func (this *Server) Start() {
