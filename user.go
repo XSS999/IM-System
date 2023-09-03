@@ -83,7 +83,7 @@ func (this *User) DoMessage(msg string) {
 			this.server.OnlineMap[this.Name] = this
 			this.server.mapLock.Unlock()
 
-			this.SendMsg("您的已更新用户名：" + newName + "\n")
+			this.SendMsg("您已更新用户名：" + newName + "\n")
 		}
 
 	} else if len(msg) > 4 && msg[:3] == "to|" { //私聊
