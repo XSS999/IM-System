@@ -88,15 +88,10 @@ func (this *Server) Handler(conn net.Conn) {
 	//fmt.Println("链接建立成功")
 
 	//当前客户端 --> User
-	user := NewUser(conn)
+	user := NewUser(conn, this)
 
-	//把用户加入到OnlineMap中
-	this.mapLock.Lock()
-	this.OnlineMap[user.Name] = user
-	this.mapLock.Unlock()
-
-	//广播当前用户上线消息
-	this.BoardCast(user, "已上线")
+	// 用户上线
+	user.Online()
 
 	// 每开一个客户端之后，就会开一个goroutine去监听当前客户端有没有发送消息
 	go func() {
@@ -106,7 +101,7 @@ func (this *Server) Handler(conn net.Conn) {
 
 			//下线逻辑
 			if n == 0 {
-				this.BoardCast(user, "已下线")
+				user.Offline()
 			}
 
 			if err != nil && err != io.EOF {
@@ -118,7 +113,7 @@ func (this *Server) Handler(conn net.Conn) {
 			msg := string(buf[:n-1])
 
 			//进行广播
-			this.BoardCast(user, msg)
+			user.DoMessage(msg)
 		}
 	}()
 
