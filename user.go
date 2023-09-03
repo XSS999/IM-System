@@ -65,6 +65,24 @@ func (this *User) DoMessage(msg string) {
 			this.SendMsg(onlineMsg)
 		}
 		this.server.mapLock.Unlock()
+	} else if len(msg) > 7 && msg[:7] == "rename|" {
+		// 重命名
+		newName := msg[7:]
+
+		// 判断name是否存在
+		_, ok := this.server.OnlineMap[newName]
+		if ok {
+			this.SendMsg("当前用户名已被使用")
+		} else {
+			this.server.mapLock.Lock()
+			delete(this.server.OnlineMap, this.Name)
+			this.Name = newName
+			this.server.OnlineMap[this.Name] = this
+			this.server.mapLock.Unlock()
+
+			this.SendMsg("您的已更新用户名：" + newName + "\n")
+		}
+
 	} else {
 		this.server.BoardCast(this, msg)
 	}
