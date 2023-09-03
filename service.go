@@ -131,7 +131,7 @@ func (this *Server) Handler(conn net.Conn) {
 		case <-isLive:
 			//不做任何事情，只为了激活select
 
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * 60):
 			//超时下线
 			user.SendMsg("您已超时")
 			//销毁资源
