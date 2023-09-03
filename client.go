@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 )
@@ -30,8 +31,20 @@ func NewClient(serverIp string, serverPort int) *Client {
 	return client
 }
 
+var serverIp string
+var serverPort int
+
+// ./client -ip 127.0.0.1 -port 8888
+func init() {
+	flag.StringVar(&serverIp, "ip", "127.0.0.1", "设置服务器的ip地址，默认是127.0.0.1")
+	flag.IntVar(&serverPort, "port", 8888, "设置服务器的端口，默认8888")
+}
+
 func main() {
-	client := NewClient("127.0.0.1", 8888)
+	//命令行解析
+	flag.Parse()
+
+	client := NewClient(serverIp, serverPort)
 	if client == nil {
 		fmt.Println("client is nil")
 		return
